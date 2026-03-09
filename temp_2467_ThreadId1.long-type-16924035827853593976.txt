@@ -1,0 +1,1 @@
+fn(ParseIntError) -> ParsePosNonzeroError {ParsePosNonzeroError::from_parseint}

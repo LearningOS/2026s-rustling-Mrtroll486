@@ -2,10 +2,9 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
-use std::ptr::NonNull;
+use std::ptr::{self, NonNull};
 use std::vec::*;
 
 #[derive(Debug)]
@@ -29,13 +28,13 @@ struct LinkedList<T> {
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T: std::cmp::PartialOrd> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T: std::cmp::PartialOrd> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -69,14 +68,65 @@ impl<T> LinkedList<T> {
             },
         }
     }
+
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
 	{
-		//TODO
-		Self {
+		let mut res = Self {
             length: 0,
             start: None,
             end: None,
+        };
+
+        unsafe {
+            let mut cur_a = list_a.start.unwrap();
+            let mut cur_b = list_b.start.unwrap();
+            loop {
+                let cur_a_val = &cur_a.as_ref().val;
+                let cur_b_val = &cur_b.as_ref().val;
+                let next: Option<NonNull<Node<T>>>;
+                if cur_a_val < cur_b_val {
+                    match res.start {
+                        None => {
+                            res.start = Some(cur_a);
+                            res.end = Some(cur_a);
+                        },
+                        Some(_) => {
+                            if let Some(mut old_end) = res.end {
+                                old_end.as_mut().next = Some(cur_a);
+                                res.end = Some(cur_a);
+                            }
+                        }
+                    }
+                    if let Some(next) = cur_a.as_ref().next {
+                        cur_a = next;
+                    } else {
+                        res.end.unwrap().as_mut().next = Some(cur_b);
+                        break;
+                    }
+                } else {
+                    match res.start {
+                        None => {
+                            res.start = Some(cur_b);
+                            res.end = Some(cur_b);
+                        },
+                        Some(_) => {
+                            if let Some(mut old_end) = res.end {
+                                old_end.as_mut().next = Some(cur_b);
+                                res.end = Some(cur_b);
+                            }
+                        }
+                    }
+                    if let Some(next) = cur_b.as_ref().next {
+                        cur_b = next;
+                    } else {
+                        res.end.unwrap().as_mut().next = Some(cur_a);
+                        break;
+                    }
+                }
+            }
+            
         }
+        res
 	}
 }
 

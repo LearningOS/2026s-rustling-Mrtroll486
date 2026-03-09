@@ -2,10 +2,10 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
+use std::process::id;
 
 pub struct Heap<T>
 where
@@ -37,7 +37,9 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        self.items.push(value);
+        self.count += 1;
+        self.b2t_heapify();
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -55,10 +57,50 @@ where
     fn right_child_idx(&self, idx: usize) -> usize {
         self.left_child_idx(idx) + 1
     }
+    
+    fn decide_order(&self, p_idx: usize, c_idx: usize) -> bool{
+        !(self.comparator)(&self.items[p_idx], &self.items[c_idx]) 
+    }
 
-    fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+    fn b2t_heapify(&mut self) {
+        let mut idx = self.count;
+        
+        while idx != 1 {
+            let parent = self.parent_idx(idx);
+            if self.decide_order(parent, idx) {
+                self.items.swap(parent, idx);
+                idx = parent
+            } else {
+                break;
+            }
+        }
+    }
+    
+    fn t2b_heapify(&mut self) {
+        let mut idx = 1;
+
+        while self.children_present(idx) {
+            let left = self.left_child_idx(idx);
+            let right = self.right_child_idx(idx);
+            if right <= self.count {
+                // right child exists
+                let child_top = if self.decide_order(left, right) { right } else { left };
+                if self.decide_order(idx, child_top) {
+                    self.items.swap(idx, child_top);
+                    idx = child_top;
+                } else {
+                    break;
+                }
+            } else {
+                // right child missing
+                if self.decide_order(idx, left) {
+                    self.items.swap(left, idx);
+                    idx = left;
+                } else {
+                    break;
+                }
+            }
+        }
     }
 }
 
@@ -84,8 +126,16 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.is_empty() {
+            None
+        } else {
+            self.items.swap(1, self.count);
+            let result = self.items.pop().unwrap();
+            self.count -= 1;
+            self.t2b_heapify();
+            
+            Some(result)
+        }
     }
 }
 

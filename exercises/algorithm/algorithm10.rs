@@ -1,8 +1,7 @@
 /*
 	graph
-	This problem requires you to implement a basic graph functio
+	This problem requires you to implement a basic graph function
 */
-// I AM NOT DONE
 
 use std::collections::{HashMap, HashSet};
 use std::fmt;
@@ -13,9 +12,11 @@ impl fmt::Display for NodeNotInGraph {
         write!(f, "accessing a node that is not in the graph")
     }
 }
+
 pub struct UndirectedGraph {
     adjacency_table: HashMap<String, Vec<(String, i32)>>,
 }
+
 impl Graph for UndirectedGraph {
     fn new() -> UndirectedGraph {
         UndirectedGraph {
@@ -29,7 +30,20 @@ impl Graph for UndirectedGraph {
         &self.adjacency_table
     }
     fn add_edge(&mut self, edge: (&str, &str, i32)) {
-        //TODO
+        self.add_node(edge.0);
+        self.add_node(edge.1);
+        
+        if let Some(item) = self.adjacency_table_mutable().get_mut(edge.0).unwrap().iter_mut().find(|(name, _)| name == edge.1) {
+            item.1 = edge.2;            
+        } else {
+            self.adjacency_table.get_mut(edge.0).unwrap().push((edge.1.to_string(), edge.2));
+        }
+
+        if let Some(item) = self.adjacency_table_mutable().get_mut(edge.1).unwrap().iter_mut().find(|(name, _)| name == edge.0) {
+            item.1 = edge.2;            
+        } else {
+            self.adjacency_table.get_mut(edge.1).unwrap().push((edge.0.to_string(), edge.2));
+        }
     }
 }
 pub trait Graph {
@@ -37,12 +51,14 @@ pub trait Graph {
     fn adjacency_table_mutable(&mut self) -> &mut HashMap<String, Vec<(String, i32)>>;
     fn adjacency_table(&self) -> &HashMap<String, Vec<(String, i32)>>;
     fn add_node(&mut self, node: &str) -> bool {
-        //TODO
-		true
+        if self.adjacency_table().contains_key(node) {
+            false
+        } else {
+            self.adjacency_table_mutable().insert(node.to_string(), Vec::new());
+		    true
+        }
     }
-    fn add_edge(&mut self, edge: (&str, &str, i32)) {
-        //TODO
-    }
+    fn add_edge(&mut self, edge: (&str, &str, i32));
     fn contains(&self, node: &str) -> bool {
         self.adjacency_table().get(node).is_some()
     }
